@@ -474,6 +474,7 @@ ZEND_API int zend_multibyte_set_filter(const zend_encoding *onetime_encoding TSR
 	return 0;
 }
 
+//打开脚本,并进行词法分析. file_handle位脚本的句柄指针变量
 ZEND_API int open_file_for_scanning(zend_file_handle *file_handle TSRMLS_DC)
 {
 	const char *file_path = NULL;
@@ -526,6 +527,7 @@ ZEND_API int open_file_for_scanning(zend_file_handle *file_handle TSRMLS_DC)
 		zend_error_noreturn(E_COMPILE_ERROR, "zend_stream_mmap() failed");
 	}
 
+	//初始化条件状态,将其设置为INITIAL状态.然后在扫描过程中会直接识别出INITIAL状态,然后匹配<?php字符串识别为开始
 	BEGIN(INITIAL);
 
 	if (file_handle->opened_path) {
@@ -993,6 +995,7 @@ restart:
 	SCNG(yy_text) = YYCURSOR;
 
 yymore_restart:
+
 
 /*!re2c
 re2c:yyfill:check = 0;
@@ -1727,10 +1730,11 @@ NEWLINE ("\r"|"\n"|"\r\n")
 	}
 }
 
-
+//php脚本的开始标签
 <INITIAL>"<?php"([ \t]|{NEWLINE}) {
 	ZVAL_STRINGL(zendlval, yytext, yyleng, 0); /* no copying - intentional */
 	HANDLE_NEWLINE(yytext[yyleng-1]);
+	//设置当前条件状态为ST_IN_SCRIPTING,之后会跳过INITIAL状态,直接匹配<ST_IN_SCRIPTING>状态后的规则
 	BEGIN(ST_IN_SCRIPTING);
 	return T_OPEN_TAG;
 }

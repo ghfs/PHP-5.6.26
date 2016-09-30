@@ -1004,6 +1004,7 @@ static int do_cli(int argc, char **argv TSRMLS_DC) /* {{{ */
 			}
 			break;
 		case PHP_MODE_STRIP:
+			//打开一个脚本文件并进行词法分析
 			if (open_file_for_scanning(&file_handle TSRMLS_CC)==SUCCESS) {
 				zend_strip(TSRMLS_C);
 			}
